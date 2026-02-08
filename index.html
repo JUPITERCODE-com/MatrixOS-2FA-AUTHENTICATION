@@ -1,71 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
 <title>MatrixOS Authenticator</title>
 <style>
 body{background:black;color:#00ffcc;font-family:monospace;text-align:center;padding:40px}
-input,button{width:90%;padding:12px;margin:10px;background:black;color:#00ffcc;border:2px solid #00ffcc;font-family:monospace;font-size:16px}
+.box{border:2px solid #00ffcc;padding:20px;margin:auto;max-width:400px}
+.code{font-size:40px;margin:20px 0}
 </style>
 </head>
 <body>
 
+<div class="box">
 <h2>MatrixOS Authenticator</h2>
-
-<p id="pairText"></p>
-<h3 id="secretBox"></h3>
-
-<div id="challengeSection">
-<p>Enter challenge from MatrixOS</p>
-<input id="challengeInput" placeholder="CHALLENGE">
-<button onclick="makeCode()">Generate Code</button>
-<h1 id="codeOut"></h1>
+<div id="pair"></div>
+<div id="codeBox" style="display:none">
+<p>Your code:</p>
+<div class="code" id="code"></div>
+<p>Refreshes every 30s</p>
+</div>
 </div>
 
 <script>
-// TYPING FUNCTION
-function typeMessage(element,message,speed=50,callback){
-  element.textContent="";
-  let i=0;
-  function step(){
-    if(i<message.length){element.textContent+=message.charAt(i++);setTimeout(step,speed);}
-    else if(callback) callback();
-  }
-  step();
-}
-
-// LOCAL STORAGE SECRET
-let secret=localStorage.getItem("matrix_secret");
-const challengeSection=document.getElementById("challengeSection");
+// FIRST TIME: create secret
+let secret = localStorage.getItem("matrix_secret");
 
 if(!secret){
-secret=Math.random().toString(36).substring(2,12);
-localStorage.setItem("matrix_secret",secret);
-challengeSection.style.display="none";
-typeMessage(secretBox,"YOUR DEVICE SECRET: "+secret,50);
-typeMessage(pairText,"Save this secret for first-time pairing!",50);
+  secret = Math.random().toString(36).substring(2,12);
+  localStorage.setItem("matrix_secret",secret);
+
+  pair.innerHTML = `
+  <p>FIRST TIME SETUP</p>
+  <p>Copy this secret into MatrixOS when pairing:</p>
+  <div class="code">${secret}</div>
+  `;
 }else{
-secretBox.textContent="Device already paired";
-challengeSection.style.display="block";
-pairText.textContent="";
+  pair.style.display="none";
+  codeBox.style.display="block";
 }
 
-// GENERATE CODE
-function generate(secret,challenge){
-let hash=0;
-const data=secret+challenge;
-for(let i=0;i<data.length;i++){
-hash=(hash*31+data.charCodeAt(i))%1000000;
-}
-return hash.toString().padStart(6,"0");
+function gen(){
+  const slice = Math.floor(Date.now()/30000);
+  let hash=0;
+  const str = secret+slice;
+  for(let i=0;i<str.length;i++){
+    hash=(hash*31+str.charCodeAt(i))%1000000;
+  }
+  code.textContent = hash.toString().padStart(6,"0");
 }
 
-// BUTTON
-function makeCode(){
-const c=challengeInput.value.trim().toUpperCase();
-if(!c) return;
-codeOut.textContent=generate(secret,c);
-}
+gen();
+setInterval(gen,1000);
 </script>
 
 </body>
