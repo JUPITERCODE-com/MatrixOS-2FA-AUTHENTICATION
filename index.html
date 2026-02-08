@@ -1,51 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <title>MatrixOS Authenticator</title>
 <style>
 body{background:black;color:#00ffcc;font-family:monospace;text-align:center;padding:40px}
-input,button{
-width:90%;padding:12px;margin:10px;
-background:black;color:#00ffcc;border:2px solid #00ffcc;
-font-family:monospace;font-size:16px}
+input,button{width:90%;padding:12px;margin:10px;background:black;color:#00ffcc;border:2px solid #00ffcc;font-family:monospace;font-size:16px}
 </style>
 </head>
 <body>
 
 <h2>MatrixOS Authenticator</h2>
 
-<p>Your device secret:</p>
+<p id="pairText"></p>
 <h3 id="secretBox"></h3>
-<button onclick="regen()">Generate New Secret</button>
 
-<hr>
-
+<div id="challengeSection">
 <p>Enter challenge from MatrixOS</p>
 <input id="challengeInput" placeholder="CHALLENGE">
 <button onclick="makeCode()">Generate Code</button>
-
 <h1 id="codeOut"></h1>
+</div>
 
 <script>
-let secret=localStorage.getItem("matrix_secret");
-
-function makeSecret(){
-return Math.random().toString(36).substring(2,12);
+// TYPING FUNCTION
+function typeMessage(element,message,speed=50,callback){
+  element.textContent="";
+  let i=0;
+  function step(){
+    if(i<message.length){element.textContent+=message.charAt(i++);setTimeout(step,speed);}
+    else if(callback) callback();
+  }
+  step();
 }
+
+// LOCAL STORAGE SECRET
+let secret=localStorage.getItem("matrix_secret");
+const challengeSection=document.getElementById("challengeSection");
 
 if(!secret){
-secret=makeSecret();
+secret=Math.random().toString(36).substring(2,12);
 localStorage.setItem("matrix_secret",secret);
+challengeSection.style.display="none";
+typeMessage(secretBox,"YOUR DEVICE SECRET: "+secret,50);
+typeMessage(pairText,"Save this secret for first-time pairing!",50);
+}else{
+secretBox.textContent="Device already paired";
+challengeSection.style.display="block";
+pairText.textContent="";
 }
 
-secretBox.textContent=secret;
-
-function regen(){
-secret=makeSecret();
-localStorage.setItem("matrix_secret",secret);
-secretBox.textContent=secret;
-}
-
+// GENERATE CODE
 function generate(secret,challenge){
 let hash=0;
 const data=secret+challenge;
@@ -55,9 +60,10 @@ hash=(hash*31+data.charCodeAt(i))%1000000;
 return hash.toString().padStart(6,"0");
 }
 
+// BUTTON
 function makeCode(){
 const c=challengeInput.value.trim().toUpperCase();
-if(!c)return;
+if(!c) return;
 codeOut.textContent=generate(secret,c);
 }
 </script>
