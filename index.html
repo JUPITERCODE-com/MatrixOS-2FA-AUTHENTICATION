@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>MatrixOS Authenticator</title>
+<style>
+body{background:black;color:#00ffcc;font-family:monospace;text-align:center;padding:40px}
+input,button{
+width:90%;padding:12px;margin:10px;
+background:black;color:#00ffcc;border:2px solid #00ffcc;
+font-family:monospace;font-size:16px}
+</style>
+</head>
+<body>
+
+<h2>MatrixOS Authenticator</h2>
+
+<p>Your device secret:</p>
+<h3 id="secretBox"></h3>
+<button onclick="regen()">Generate New Secret</button>
+
+<hr>
+
+<p>Enter challenge from MatrixOS</p>
+<input id="challengeInput" placeholder="CHALLENGE">
+<button onclick="makeCode()">Generate Code</button>
+
+<h1 id="codeOut"></h1>
+
+<script>
+let secret=localStorage.getItem("matrix_secret");
+
+function makeSecret(){
+return Math.random().toString(36).substring(2,12);
+}
+
+if(!secret){
+secret=makeSecret();
+localStorage.setItem("matrix_secret",secret);
+}
+
+secretBox.textContent=secret;
+
+function regen(){
+secret=makeSecret();
+localStorage.setItem("matrix_secret",secret);
+secretBox.textContent=secret;
+}
+
+function generate(secret,challenge){
+let hash=0;
+const data=secret+challenge;
+for(let i=0;i<data.length;i++){
+hash=(hash*31+data.charCodeAt(i))%1000000;
+}
+return hash.toString().padStart(6,"0");
+}
+
+function makeCode(){
+const c=challengeInput.value.trim().toUpperCase();
+if(!c)return;
+codeOut.textContent=generate(secret,c);
+}
+</script>
+
+</body>
+</html>
