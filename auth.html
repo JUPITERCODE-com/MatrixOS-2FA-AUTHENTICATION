@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>MatrixOS Auth</title>
+
+
+<style>
+body{
+background:black;
+color:#00ff9c;
+font-family:monospace;
+padding:20px;
+}
+input,button{
+background:black;
+color:#00ff9c;
+border:1px solid #00ff9c;
+padding:10px;
+font-family:monospace;
+}
+pre{
+margin-top:20px;
+}
+</style>
+</head>
+
+
+<body>
+
+
+<h3>MatrixOS Authenticator</h3>
+<p>Paste MatrixOS code</p>
+
+
+<input id="code">
+<button onclick="scramble()">SCRAMBLE</button>
+
+
+<pre id="out"></pre>
+
+
+<script>
+function scramble(){
+const val=document.getElementById("code").value.trim();
+if(!val)return;
+
+
+const result=val.split("").reverse().join("")+"X";
+
+
+document.getElementById("out").textContent=
+"COPY THIS BACK TO MATRIXOS:\n\n"+result;
+}
+</script>
+
+
+</body>
+</html>
